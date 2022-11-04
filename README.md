@@ -1,66 +1,52 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+### Steps we took to create this project
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# 1- Creating OCR Micro Service Using Lumen
 
-## About Laravel
+- In this step we initialized a project using Lumen (A microservice version or laravel)
+- We added only 1 route and 1 function that will accept a PDF file and return the text in that file
+    The function works by first converting the PDF file to Image and then using the Tesseret Library
+    we process the image and extract the text inside it
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+    * The function saves the pdf file , converts it to image and once the text process is done those files
+    are deleted to save space
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+# 2- Creating an API to handle the users requests Using Laravel
+- In this project we created multiple functions that do different operations
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Register Function
+- This function collects the user data and check if user already exist in the database
+    - if the data are validated and user do not exist, it will register new user and generate token
+    - if the data is incorrect or user already exist, it will return an error message
 
-## Learning Laravel
+## Login Function
+- This function accepts a user email and password, and compares them to the users data in the database
+    - if the data is correct, it will generate a bearertoken and send it back to the user
+    - if the data is incorrect, it will return an error message
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## BearerAuth Middleware
+- in this step we created a middleware to process all API calls and verify that the user is authenticated
+    - First we created the middleware class in app/Http/Middleware/BearerAuth.php
+        This middleware will process any request made to the API endpoint and check if the token is valid
+    - Second we defined the route in our app/Http/Kernel.php
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## File Upload
+- For this we only needed to create one route and one controller
+-  Route is a post route called upload-file
+# Controller (app/Http/Controllers/UploadController.php)
+- This controller only has one function that will accept the uploaded file and validate it if the file passes validation it will be sent to the OCR Microservice and once data is returned from the Microservice it will be saved in the database and also returned to the user/client
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## API Endpoints
 
-## Laravel Sponsors
+# Registration
+- /api/register
+    Params: name | email | password
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+# Login 
+- /api/login
+    Params: email | password
 
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# API File Upload
+- /api/upload-file
+    Authorisation: Bearer Token
+    - Body 
+        Key: File[] (type: file)
